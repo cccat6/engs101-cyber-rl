@@ -1,0 +1,107 @@
+schema_version: 1
+name: engs101-base
+horizon: 100
+max_decoys_per_host: 2
+
+subnets:
+  user:
+    connects_to:
+      enterprise: [ssh, smb, http, https]
+  enterprise:
+    connects_to:
+      user: ["*"]
+      server: [ssh, http, https, sql]
+  server:
+    connects_to:
+      enterprise: ["*"]
+
+hosts:
+  user_0:
+    subnet: user
+    role: client
+    blue_managed: false
+    escalation_probability: 0.75
+    services:
+      - {name: ssh, port: 22, exploit: brute_force, success_probability: 0.60, detection_probability: 0.75, grants: user}
+  user_1:
+    subnet: user
+    role: client
+    escalation_probability: 0.75
+    services:
+      - {name: smb, port: 445, exploit: eternal, success_probability: 0.65, detection_probability: 0.65, grants: user}
+  user_2:
+    subnet: user
+    role: client
+    escalation_probability: 0.70
+    services:
+      - {name: http, port: 80, exploit: rfi, success_probability: 0.60, detection_probability: 0.55, grants: user}
+  gateway_0:
+    subnet: enterprise
+    role: gateway
+    escalation_probability: 0.70
+    services:
+      - {name: ssh, port: 22, exploit: brute_force, success_probability: 0.55, detection_probability: 0.80, grants: user}
+  enterprise_0:
+    subnet: enterprise
+    role: workstation
+    escalation_probability: 0.75
+    services:
+      - {name: smb, port: 445, exploit: eternal, success_probability: 0.60, detection_probability: 0.65, grants: user}
+  enterprise_1:
+    subnet: enterprise
+    role: workstation
+    escalation_probability: 0.75
+    services:
+      - {name: https, port: 443, exploit: rfi, success_probability: 0.60, detection_probability: 0.60, grants: user}
+  auth_server:
+    subnet: server
+    role: auth_server
+    escalation_probability: 0.65
+    services:
+      - {name: ssh, port: 22, exploit: brute_force, success_probability: 0.50, detection_probability: 0.85, grants: user}
+  web_server:
+    subnet: server
+    role: web_server
+    escalation_probability: 0.70
+    services:
+      - {name: https, port: 443, exploit: rfi, success_probability: 0.60, detection_probability: 0.70, grants: user}
+  db_server:
+    subnet: server
+    role: database
+    escalation_probability: 0.60
+    services:
+      - {name: sql, port: 5432, exploit: sql_injection, success_probability: 0.50, detection_probability: 0.75, grants: user}
+
+red_start:
+  host: user_0
+  access: root
+
+mission:
+  objectives:
+    availability: 0.50
+    confidentiality: 0.30
+    integrity: 0.20
+  assets:
+    authentication:
+      host: auth_server
+      costs: {availability: 0.90, confidentiality: 0.80, integrity: 0.30}
+    web_frontend:
+      host: web_server
+      costs: {availability: 1.00, confidentiality: 0.20, integrity: 0.70}
+    payroll_database:
+      host: db_server
+      costs: {availability: 0.80, confidentiality: 1.00, integrity: 1.00}
+
+dynamics:
+  scan_detection_probability: 0.65
+  escalation_detection_probability: 0.35
+
+reward:
+  new_user_access: 0.03
+  new_root_access: 0.10
+  red_action_costs: {}
+  blue_action_costs:
+    decoy: 0.005
+    remove: 0.010
+    restore: 0.020
+

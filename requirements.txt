@@ -1,0 +1,2 @@
+# PyTorch and NumPy are the only student-facing third-party libraries.
+-e .

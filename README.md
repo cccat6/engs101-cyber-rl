@@ -1,13 +1,14 @@
 # ENGS 101 Cyber RL Final Project
 
-This public repository contains:
+This repository contains the student starter and a small local environment.
 
-- `student_agent.py`: the only file students need to edit;
-- `scenarios/`: the small public environment;
-- `cyberrl_eval`: the local training and testing runner;
-- `assignment/final_project.tex`: the project handout.
+Students only need to use:
 
-The cloud system uses the same agent interface with a hidden environment.
+- `student_agent.py` - implement the agent;
+- `run.py` - train and test it locally;
+- `scenarios/base.yaml` - the public environment.
+
+The code under `src/` is the local backend and does not need to be modified.
 
 ## Setup
 
@@ -19,10 +20,29 @@ python -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-Student code may use the Python standard library, PyTorch, and NumPy. Do not
-use existing RL implementations such as Stable-Baselines3 or RLlib.
+The requirements are PyTorch, NumPy, and PyYAML. Student agent code may use
+the Python standard library, PyTorch, and NumPy. Existing RL implementations
+such as Stable-Baselines3 and RLlib are not allowed.
 
-## Implement the agent
+## Run
+
+```powershell
+python run.py
+```
+
+The command trains the same code as Red and Blue, saves both models, reloads
+them, and runs local evaluation.
+
+Optional local settings are:
+
+```powershell
+python run.py --steps 5000 --eval-episodes 10 --device cuda
+```
+
+The server supplies the official training budget, seeds, environment, and
+device.
+
+## Agent interface
 
 Keep this function in `student_agent.py`:
 
@@ -31,57 +51,14 @@ def create_agent(config):
     return YourAgent(config)
 ```
 
-The returned object needs four things:
+The returned object must provide:
 
 ```python
-agent.model                         # torch.nn.Module
-agent.reset(seed)                   # called at the start of each episode
-agent.act(observation, training)    # returns one valid integer action
-agent.learn(transition)             # called once per training step
+agent.model
+agent.reset(seed)
+agent.act(observation, training)
+agent.learn(transition)
 ```
 
-`config` contains only:
-
-```text
-role, observation_dim, num_actions, total_steps, seed, device
-```
-
-Use `config.device` when creating tensors and moving the model. The server
-selects the CUDA device. Local runs may use `auto`, `cpu`, `cuda`, `xpu`, or
-`mps` (`metal` is accepted as an alias).
-
-`observation` contains:
-
-```text
-observation.features       float32 vector
-observation.action_mask    boolean vector of valid actions
-```
-
-`transition` contains:
-
-```text
-observation, action, reward, next_observation, done
-```
-
-The provided agent runs but does not learn.
-
-## Run locally
-
-From the repository root:
-
-```powershell
-python -m cyberrl_eval.submission_cli --steps 1000 --device auto
-```
-
-This command trains the same code as Red and Blue, saves
-`checkpoints/red.pt` and `checkpoints/blue.pt`, reloads both checkpoints, and
-tests them on the public scenarios.
-
-Local settings are for development only. The cloud runner supplies the
-official step budget, seeds, environment, device, and evaluation episodes.
-
-## Tests
-
-```powershell
-python -m unittest discover -s tests -v
-```
+The included `SimpleAgent` is a minimal one-layer policy-gradient example. It
+runs end to end and updates its model, but it is not intended to be competitive.

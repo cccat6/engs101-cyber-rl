@@ -11,7 +11,3 @@ reports/
 checkpoints/
 *.pt
 *.pth
-*.aux
-*.log
-*.out
-*.toc

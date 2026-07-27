@@ -1,10 +1,9 @@
-"""Edit this file to implement your agent."""
+"""A minimal trainable agent. Students may replace this implementation."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import numpy as np
 import torch
 from torch import nn
 
@@ -12,44 +11,54 @@ if TYPE_CHECKING:
     from cyberrl_eval import AgentConfig, Observation, Transition
 
 
-class StarterAgent:
-    """Runnable example that does not learn."""
+class SimpleAgent:
+    """One-layer, one-step policy-gradient example."""
 
     def __init__(self, config: AgentConfig) -> None:
         self.device = torch.device(config.device)
-        self.model = nn.Sequential(
-            nn.Linear(config.observation_dim, 32),
-            nn.Tanh(),
-            nn.Linear(32, config.num_actions),
+        self.model = nn.Linear(
+            config.observation_dim,
+            config.num_actions,
         ).to(self.device)
-        self.rng = np.random.default_rng(config.seed)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=1e-3)
+        self._log_probability = None
 
     def reset(self, seed: int) -> None:
-        self.rng = np.random.default_rng(seed)
+        torch.manual_seed(seed)
 
     def act(self, observation: Observation, training: bool) -> int:
-        valid = np.flatnonzero(observation.action_mask)
-        if training:
-            return int(self.rng.choice(valid))
+        features = torch.as_tensor(
+            observation.features,
+            dtype=torch.float32,
+            device=self.device,
+        )
+        mask = torch.as_tensor(
+            observation.action_mask,
+            dtype=torch.bool,
+            device=self.device,
+        )
+        logits = self.model(features).masked_fill(~mask, -torch.inf)
 
-        with torch.no_grad():
-            features = torch.as_tensor(
-                observation.features,
-                dtype=torch.float32,
-                device=self.device,
-            )
-            values = self.model(features)
-            mask = torch.as_tensor(
-                observation.action_mask,
-                dtype=torch.bool,
-                device=self.device,
-            )
-            return int(values.masked_fill(~mask, -torch.inf).argmax().item())
+        if not training:
+            return int(logits.argmax().item())
+
+        distribution = torch.distributions.Categorical(logits=logits)
+        action = distribution.sample()
+        self._log_probability = distribution.log_prob(action)
+        return int(action.item())
 
     def learn(self, transition: Transition) -> None:
-        # Replace this with your own PyTorch update.
-        del transition
+        reward = torch.tensor(
+            transition.reward,
+            dtype=torch.float32,
+            device=self.device,
+        )
+        loss = -self._log_probability * reward
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        self._log_probability = None
 
 
-def create_agent(config: AgentConfig) -> StarterAgent:
-    return StarterAgent(config)
+def create_agent(config: AgentConfig) -> SimpleAgent:
+    return SimpleAgent(config)

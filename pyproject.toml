@@ -14,9 +14,5 @@ dependencies = [
     "torch>=2.1,<3",
 ]
 
-[project.scripts]
-cyberrl-eval = "cyberrl_eval.cli:main"
-cyberrl-submission = "cyberrl_eval.submission_cli:main"
-
 [tool.setuptools.packages.find]
 where = ["src"]

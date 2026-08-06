@@ -1,4 +1,8 @@
-"""A minimal trainable agent. Students may replace this implementation."""
+"""A minimal trainable agent. Students may replace this implementation.
+
+The submitted model may contain at most 1,000,000 registered parameters per
+role. The local runner checks the same limit as the course server.
+"""
 
 from __future__ import annotations
 

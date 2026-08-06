@@ -214,3 +214,10 @@ AGENT_FACTORIES = {
     "focused-red": FocusedRedAgent,
     "reactive-blue": ReactiveBlueAgent,
 }
+
+
+def make_agent(name: str) -> Agent:
+    try:
+        return AGENT_FACTORIES[name]()
+    except KeyError as error:
+        raise ValueError(f"Unknown trusted agent: {name}") from error

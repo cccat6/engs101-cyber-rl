@@ -11,3 +11,4 @@ reports/
 checkpoints/
 *.pt
 *.pth
+!src/cyberrl_eval/teacher_baseline/*.pt

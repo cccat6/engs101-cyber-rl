@@ -11,8 +11,8 @@ from typing import Any, Iterable, Mapping
 import torch
 from torch import nn
 
-from .agents import AGENT_FACTORIES
 from .devices import resolve_device, seed_everything
+from .environment import CyberRLEnv
 from .model import Role
 from .scoring import MissionAUCScorer
 from .single_agent import SingleRoleEnv
@@ -31,6 +31,8 @@ from .submission_api import (
 
 CHECKPOINT_FORMAT = "engs101-cyber-rl"
 DEFAULT_ENTRYPOINT = "student_agent:create_agent"
+TEACHER_BASELINE_DIR = Path(__file__).with_name("teacher_baseline")
+MAX_MODEL_PARAMETERS = 1_000_000
 
 
 @dataclass(frozen=True, slots=True)
@@ -91,6 +93,28 @@ class FrozenSubmission:
         return validate_action(action, view, self.config.num_actions)
 
 
+@dataclass(slots=True)
+class FrozenTeacherOpponent:
+    role: Role
+    policy: FrozenSubmission
+    name: str = "teacher-baseline"
+
+    def reset(self, seed: int | None) -> None:
+        self.policy.reset(0 if seed is None else int(seed))
+
+    def act(
+        self,
+        observation: Mapping[str, object],
+        environment: CyberRLEnv,
+    ) -> int:
+        return self.policy.act(
+            {
+                "features": environment.flatten(self.role, observation),
+                "action_mask": observation["action_mask"],
+            }
+        )
+
+
 def load_agent_factory() -> AgentFactory:
     module_name, function_name = DEFAULT_ENTRYPOINT.split(":", 1)
     try:
@@ -112,23 +136,35 @@ def _require_agent(agent: object) -> StudentAgent:
     model = getattr(agent, "model", None)
     if not isinstance(model, nn.Module):
         raise SubmissionContractError("The agent must expose model: torch.nn.Module")
+    parameter_count = sum(parameter.numel() for parameter in model.parameters())
+    if parameter_count > MAX_MODEL_PARAMETERS:
+        raise SubmissionContractError(
+            f"Model has {parameter_count:,} parameters; the limit is "
+            f"{MAX_MODEL_PARAMETERS:,} per role"
+        )
     return agent
-
-
-def _resolve_opponent(role: Role):
-    name = "sleep" if role is Role.RED else "greedy-red"
-    return AGENT_FACTORIES[name]()
 
 
 def _environments(
     scenarios: Iterable[str | Path],
     role: Role,
+    *,
+    device: str = "cpu",
 ) -> list[SingleRoleEnv]:
     paths = [Path(path).resolve() for path in scenarios]
     if not paths:
         raise ValueError("At least one scenario is required")
+    opponent_role = Role.BLUE if role is Role.RED else Role.RED
+    opponent = FrozenTeacherOpponent(
+        opponent_role,
+        load_teacher_policy(opponent_role, device=device),
+    )
     environments = [
-        SingleRoleEnv(path, role=role, opponent=_resolve_opponent(role))
+        SingleRoleEnv(
+            path,
+            role=role,
+            opponent_controller=opponent,
+        )
         for path in paths
     ]
     first = environments[0]
@@ -211,12 +247,14 @@ def load_frozen_submission(
     checkpoint: str | Path,
     *,
     device: str,
+    factory: AgentFactory | None = None,
 ) -> FrozenSubmission:
     resolved_device = resolve_device(device)
     payload = _load_payload(checkpoint)
     config = _config_from_payload(payload["config"], resolved_device)
     seed_everything(config.seed)
-    agent = _require_agent(load_agent_factory()(config))
+    selected_factory = factory if factory is not None else load_agent_factory()
+    agent = _require_agent(selected_factory(config))
     try:
         agent.model.load_state_dict(payload["model"], strict=True)
     except Exception as error:
@@ -225,6 +263,23 @@ def load_frozen_submission(
         ) from error
     agent.model.eval()
     return FrozenSubmission(agent, config)
+
+
+def teacher_checkpoint(role: Role | str) -> Path:
+    return TEACHER_BASELINE_DIR / f"{Role(role).value}.pt"
+
+
+def load_teacher_policy(role: Role | str, *, device: str) -> FrozenSubmission:
+    role = Role(role)
+    checkpoint = teacher_checkpoint(role)
+    if not checkpoint.is_file():
+        raise RuntimeError(f"Frozen teacher checkpoint is missing for {role.value}")
+    module = import_module("cyberrl_eval.teacher_baseline.student_agent")
+    return load_frozen_submission(
+        checkpoint,
+        device=device,
+        factory=module.create_agent,
+    )
 
 
 def train_submission(
@@ -239,8 +294,8 @@ def train_submission(
     if total_steps <= 0:
         raise ValueError("total_steps must be positive")
     role = Role(role)
-    environments = _environments(scenarios, role)
     resolved_device = resolve_device(device)
+    environments = _environments(scenarios, role, device=resolved_device)
     first = environments[0]
     config = AgentConfig(
         role=role.value,
@@ -326,7 +381,11 @@ def evaluate_submission(
         raise ValueError("episodes must be positive")
     frozen = load_frozen_submission(checkpoint, device=device)
     role = Role(frozen.config.role)
-    environments = _environments(scenarios, role)
+    environments = _environments(
+        scenarios,
+        role,
+        device=resolve_device(device),
+    )
     first = environments[0]
     if (
         first.observation_size != frozen.config.observation_dim
@@ -352,7 +411,10 @@ def evaluate_submission(
             scores.append(float(score[role.value]))
         summaries.append(
             ScenarioEvaluation(
-                scenario=environment.env.scenario.name,
+                scenario=(
+                    f"{environment.env.scenario.name} "
+                    f"vs {environment.opponent.name}"
+                ),
                 episodes=episodes,
                 score=fmean(scores),
             )

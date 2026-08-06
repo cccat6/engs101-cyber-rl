@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Protocol
 
 import numpy as np
 
@@ -11,6 +11,46 @@ from .agents import Agent
 from .environment import CyberRLEnv
 from .model import Role
 from .scenario import ScenarioSpec
+
+
+class EnvironmentOpponent(Protocol):
+    """Opponent that can consume the simulator's structured observation."""
+
+    name: str
+
+    def reset(self, seed: int | None) -> None: ...
+
+    def act(
+        self,
+        observation: Mapping[str, Any],
+        environment: CyberRLEnv,
+    ) -> int: ...
+
+
+class _ScriptedOpponent:
+    def __init__(self, agent: Agent) -> None:
+        self.agent = agent
+        self.name = agent.name
+        self.rng = np.random.default_rng()
+
+    def reset(self, seed: int | None) -> None:
+        self.agent.reset()
+        self.rng = np.random.default_rng(seed)
+
+    def act(
+        self,
+        observation: Mapping[str, Any],
+        environment: CyberRLEnv,
+    ) -> int:
+        return int(
+            self.agent.act(
+                observation,
+                environment.action_spaces[self.role.value],
+                self.rng,
+            )
+        )
+
+    role: Role
 
 
 class SingleRoleEnv:
@@ -30,13 +70,19 @@ class SingleRoleEnv:
         scenario: ScenarioSpec | str | Path,
         *,
         role: Role | str,
-        opponent: Agent,
+        opponent: Agent | None = None,
+        opponent_controller: EnvironmentOpponent | None = None,
     ) -> None:
+        if (opponent is None) == (opponent_controller is None):
+            raise ValueError("Provide exactly one fixed opponent")
         self.env = CyberRLEnv(scenario)
         self.role = Role(role)
         self.opponent_role = Role.BLUE if self.role is Role.RED else Role.RED
-        self.opponent = opponent
-        self._opponent_rng = np.random.default_rng()
+        if opponent_controller is None:
+            scripted = _ScriptedOpponent(opponent)
+            scripted.role = self.opponent_role
+            opponent_controller = scripted
+        self.opponent = opponent_controller
         self._sampling_rng = np.random.default_rng()
         self._observations: dict[str, dict[str, Any]] | None = None
 
@@ -66,10 +112,9 @@ class SingleRoleEnv:
         self,
         seed: int | None = None,
     ) -> tuple[dict[str, np.ndarray], dict[str, Any]]:
-        self.opponent.reset()
         opponent_seed = None if seed is None else int(seed) ^ 0x6A09E667
         sampling_seed = None if seed is None else int(seed) ^ 0xBB67AE85
-        self._opponent_rng = np.random.default_rng(opponent_seed)
+        self.opponent.reset(opponent_seed)
         self._sampling_rng = np.random.default_rng(sampling_seed)
         self._observations, infos = self.env.reset(seed=seed)
         info = dict(infos[self.role.value])
@@ -88,11 +133,9 @@ class SingleRoleEnv:
         if self._observations is None:
             raise RuntimeError("Environment has not been reset")
 
-        opponent_space = self.env.action_spaces[self.opponent_role.value]
         opponent_action = self.opponent.act(
             self._observations[self.opponent_role.value],
-            opponent_space,
-            self._opponent_rng,
+            self.env,
         )
         joint_actions = {
             self.role.value: int(action),

@@ -20,7 +20,7 @@ def main() -> None:
 
     for role in ("red", "blue"):
         checkpoint = output / f"{role}.pt"
-        train_submission(
+        training = train_submission(
             [scenario],
             role=role,
             total_steps=args.steps,
@@ -37,6 +37,7 @@ def main() -> None:
         )
         print(
             f"{role.capitalize()}: score={result.overall_score:.2f}, "
+            f"parameters={training.checkpoint_elements:,}, "
             f"checkpoint={checkpoint}"
         )
 

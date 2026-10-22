@@ -1,0 +1,429 @@
+\documentclass[12pt]{report}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlength{\emergencystretch}{2em}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize ENGS 101: Principles of Reinforcement Learning}
+\fancyhead[R]{\footnotesize Final Project}
+\fancyfoot[C]{\thepage}
+
+\newcommand{\intermediatedate}{November 1, 2026, 23:59 ET}
+\newcommand{\finalduedate}{November 17, 2026, 23:59 ET}
+\newcommand{\repositoryurl}{https://github.com/cccat6/engs101-cyber-rl}
+\newcommand{\arenaurl}{https://arena.codefly.run}
+
+\begin{document}
+
+\noindent
+\begin{minipage}{\textwidth}
+    \raggedright
+    \textbf{ENGS 101 Final Project}\\
+    \vspace{0.6em}
+    \begin{center}
+      {\Large \textbf{Red--Blue Cybersecurity RL Challenge}}
+    \end{center}
+    Instructor: Prof.\ Peter Chin\\
+    \textbf{Intermediate:} \intermediatedate\\
+    \textbf{Final:} \finalduedate
+\end{minipage}
+
+\vspace{0.5em}
+
+\begin{enumerate}[leftmargin=0.25in,label=$\diamond$,itemsep=0.15em]
+  \item Submit one ZIP archive through the course website at
+        \href{\arenaurl}{\texttt{arena.codefly.run}}. Name the archive with
+        your seven-character student ID.
+  \item Submit one agent implementation. The same code must support both the
+        Red and Blue roles.
+  \item You may use the Python standard library, PyTorch, and NumPy. You may
+        not use an existing reinforcement-learning implementation or framework.
+  \item The project has two separately recorded stages: an Intermediate
+        submission and a Final submission. Both stages use the same upload
+        format and interface.
+  \item The course server performs the official training and evaluation.
+        Local results are for development only.
+\end{enumerate}
+
+\section*{1. Assessment Schedule and Grading}
+
+Dartmouth's Fall 2026 classes begin on September 14 and end on November 17.
+The Intermediate deadline is the end of Week 7, November 1, 2026 at 23:59
+Eastern Time. The Final deadline is the last day of classes, November 17, 2026
+at 23:59 Eastern Time. These dates are based on the Registrar's Fall Term 2026
+calendar: \href{https://registrar.dartmouth.edu/calendars/academic-institutional-calendars/2026-2027-key-dates/fall-term-2026}{Dartmouth Fall Term 2026 calendar}.
+
+The server preserves each upload as a separate timestamped source snapshot.
+Please select the correct stage on the upload page, use your own student ID,
+and do not share the submission website.
+
+Each stage is scored out of 100 points. An upload receipt confirms only the
+archive format. Both role-training runs, model reload and evaluation must
+succeed before stage credit is recorded. Fix a failed run and resubmit.
+The role score is compared with the fixed course teacher baseline; a role
+``beats'' a baseline when its fixed-evaluation point estimate is strictly above
+that baseline.
+
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.74\textwidth}p{0.16\textwidth}}
+\toprule
+\textbf{Stage result} & \textbf{Stage score} \\
+\midrule
+Intermediate: both Red and Blue beat the teacher baseline & 100 \\
+Intermediate: exactly one role beats the teacher baseline & 80 \\
+Intermediate: submission passes validation but neither role beats the baseline & 60 \\
+\midrule
+Final: both roles beat the Final teacher challenge & 100 \\
+Final: exactly one role beats the Final teacher challenge & 80 \\
+Final: neither role beats the Final challenge, but both roles beat the Intermediate teacher baseline & 60 \\
+Final: neither role beats the Final challenge, and exactly one role beats the Intermediate baseline & 40 \\
+Final: neither role beats either teacher baseline & 20 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+After the Intermediate deadline, the course team freezes the valid Intermediate
+policies and trains a stronger Final teacher challenge from that cohort. The
+Final teacher challenge, hidden scenarios, random seeds, training budget and
+evaluation budget are fixed before Final submissions are evaluated. The
+student-vs-student matrix is a diagnostic leaderboard and does not determine
+the stage score.
+
+Final uploads remain closed until the Final teacher challenge is frozen and
+released by the course team. Intermediate and Final points are retained
+separately even when a newer upload replaces the active leaderboard entry.
+
+\section*{2. Objective}
+
+Design and implement a reinforcement-learning agent for a simulated
+cybersecurity environment. Red attempts to discover, compromise, and impact
+network assets. Blue attempts to detect activity, deploy decoys, remove access,
+and restore hosts.
+
+Your code will be trained separately as Red and Blue. The resulting frozen
+policies will be scored relative to the frozen course baseline. They will also
+play against the policies submitted by the rest of the class in a separate
+cross-play matrix.
+
+\section*{3. Starter repository}
+
+Clone the public repository:
+
+\begin{verbatim}
+git clone https://github.com/cccat6/engs101-cyber-rl
+cd engs101-cyber-rl
+python -m venv .venv
+\end{verbatim}
+
+Activate \texttt{.venv} using the command for your operating system, then run:
+
+\begin{verbatim}
+python -m pip install -r requirements.txt
+\end{verbatim}
+
+The repository contains a small public environment and a complete runnable
+example. The student-facing files are:
+
+\begin{center}
+\begin{tabular}{p{0.28\textwidth}p{0.64\textwidth}}
+\toprule
+\textbf{File} & \textbf{Purpose} \\
+\midrule
+\texttt{student\_agent.py} &
+Implement your agent here. This is the main file you will edit. \\
+\texttt{run.py} &
+Train and test the same agent locally as both Red and Blue. Keep this file in
+the submission. \\
+\texttt{scenarios/base.yaml} &
+The public local environment used by \texttt{run.py}. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Python 3.11 or later is required. Install the dependencies from
+\texttt{requirements.txt}. The file contains PyTorch, NumPy, PyYAML, and the
+local environment package.
+
+The public environment is smaller than the hidden server environment. Do not
+hard-code observation dimensions, action counts, host names, or a particular
+topology.
+
+\section*{4. Required interface}
+
+Keep the following function:
+
+\begin{verbatim}
+def create_agent(config):
+    return YourAgent(config)
+\end{verbatim}
+
+The returned object must expose:
+
+\begin{verbatim}
+agent.model
+agent.reset(seed)
+agent.act(observation, training)
+agent.learn(transition)
+\end{verbatim}
+
+\texttt{agent.model} must be a \texttt{torch.nn.Module}. The model may contain
+at most 1,000,000 registered parameters per role.
+The local runner and the course server perform the same check immediately after
+\texttt{create\_agent(config)} returns. A submission that exceeds the limit is
+rejected before environment training begins.
+
+The other three members have the following meanings:
+
+\begin{center}
+\begin{tabular}{p{0.30\textwidth}p{0.62\textwidth}}
+\toprule
+\textbf{Member} & \textbf{Purpose} \\
+\midrule
+\texttt{reset(seed)} &
+Reset episode-local state. \\
+\texttt{act(observation, training)} &
+Return one valid integer action. \\
+\texttt{learn(transition)} &
+Store the transition and perform any training update. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The runner supplies this configuration:
+
+\begin{verbatim}
+config.role
+config.observation_dim
+config.num_actions
+config.total_steps
+config.seed
+config.device
+\end{verbatim}
+
+Always construct the model from the supplied dimensions and move it to
+\texttt{config.device}. The server normally supplies a CUDA device; local
+development may use CPU, CUDA, Intel XPU, or Apple MPS.
+
+\section*{5. Observations and transitions}
+
+The policy observation has two fields:
+
+\begin{verbatim}
+observation.features
+observation.action_mask
+\end{verbatim}
+
+\texttt{features} is a one-dimensional \texttt{float32} NumPy array.
+\texttt{action\_mask} is a Boolean array with one entry per action.
+\texttt{act} must return an action whose mask entry is true.
+
+During training, \texttt{learn} receives:
+
+\begin{verbatim}
+transition.observation
+transition.action
+transition.reward
+transition.next_observation
+transition.done
+\end{verbatim}
+
+The runner calls \texttt{learn} exactly once per environment step. Evaluation
+does not call \texttt{learn}.
+
+\section*{6. Implementation rule}
+
+You must implement the RL algorithm yourself using PyTorch tensor operations,
+neural-network modules, and optimizers. Allowed components include
+\texttt{torch.nn.Linear}, activation functions, automatic differentiation, and
+\texttt{torch.optim}.
+
+Do not import an implementation of DQN, PPO, actor--critic, replay buffers,
+training loops, or policies from an RL package. In particular, do not use
+Stable-Baselines3, RLlib, CleanRL, Tianshou, TorchRL algorithms, or equivalent
+ready-made implementations.
+
+\section*{7. Local run}
+
+From the repository root, run:
+
+\begin{verbatim}
+python run.py --steps 1000 --device auto
+\end{verbatim}
+
+This single command:
+
+\begin{enumerate}[leftmargin=0.3in]
+  \item trains the submitted code as Red;
+  \item saves and reloads the Red model;
+  \item tests the frozen Red model;
+  \item repeats the same process as Blue.
+\end{enumerate}
+
+After testing your changes, package only the required source files:
+\begin{verbatim}
+python package_submission.py YOUR_ID
+# If your agent imports a helper module:
+python package_submission.py YOUR_ID --include helper.py
+\end{verbatim}
+Replace \texttt{YOUR\_ID} with your own seven-character Dartmouth ID.
+
+The provided \texttt{SimpleAgent} is a minimal one-layer policy-gradient
+example. It runs end to end and updates its PyTorch model, but it is deliberately
+small and is not intended to be competitive. You may replace its implementation
+while preserving the required interface.
+
+\section*{8. Server training and evaluation}
+
+The course server supplies the official environment-step budget, random seeds,
+training scenarios, device, and evaluation episodes. These values are the same
+for all submissions.
+
+For each role, the runner uses one frozen, course-owned teacher policy as the
+opponent. The public repository contains teacher checkpoints for local work;
+the server uses separately trained private checkpoints with the same
+interface. The teacher opponent is reset between episodes but is never updated
+during student training. Thus every submission receives the same number of
+environment steps and the same fixed opponent.
+
+After training, the server saves the weights in \texttt{agent.model}. It then
+creates a fresh agent, reloads those weights, and performs frozen inference.
+
+The public and hidden environments use the same interface but may have
+different dimensions and network topologies.
+
+\section*{9. Reward and score}
+
+The environment supplies a per-step reward for learning. The leaderboard score
+is computed separately from the mission loss over the whole episode.
+
+For an episode of length $T$, let
+
+\[
+D = \frac{1}{T}\sum_{t=1}^{T}\text{mission\_loss}_t.
+\]
+
+The corresponding role scores are
+
+\[
+\text{RedScore}=100D,
+\qquad
+\text{BlueScore}=100(1-D).
+\]
+
+For the stable score, each frozen student role is evaluated against the
+opposite frozen teacher role. Let $R_s$ be the raw score of a student Red
+policy against teacher Blue, and let $R_b$ be teacher Red's raw score against
+teacher Blue. Define the relative Red score as
+
+\[
+\text{RelativeRed}=\operatorname{clip}(50+R_s-R_b,0,100).
+\]
+
+The relative Blue score is defined analogously from student Blue against
+teacher Red. The teacher baseline therefore receives 50 for each role. The
+stable score is the average of the relative Red and Blue scores. The server
+also reports a 95\% confidence interval. This centering changes only the
+aggregate, not the environment reward or any episode score. Training rewards
+are not leaderboard points.
+
+\section*{10. Leaderboard}
+
+Each accepted submission produces one frozen Red policy and one frozen Blue
+policy. The main standing ranks the stable score relative to the teacher
+baseline. The server separately evaluates every submitted Red policy against
+every submitted Blue policy and the course baseline.
+
+When a new submission is accepted, the server recomputes baseline-relative
+scores, rebuilds the comparison matrix using the saved frozen policies, and
+re-ranks all participants. Old policies are re-evaluated, not retrained.
+The upload form, submission status, stable standings, confidence intervals,
+and Red--Blue comparison matrix appear on the same course webpage. Matrix
+scores are relative to the current class population and do not determine the
+stable score. Hidden scenarios and trajectories are not released.
+
+\section*{11. Submission}
+
+Upload one ZIP archive through the course website. Its filename must be your
+seven-character student ID followed by \texttt{.zip}. The ID may contain ASCII
+letters and digits, in either case; the server converts it to lowercase. For
+example:
+
+\begin{verbatim}
+F001ABC.zip
+\end{verbatim}
+
+Submit only the runnable entry points and any Python helper modules used by your
+agent. The archive may place these source files at its root:
+
+\begin{verbatim}
+F001ABC.zip
+|-- run.py
+|-- student_agent.py
+`-- helper.py                 (if used)
+\end{verbatim}
+
+Alternatively, the same contents may be inside one folder:
+
+\begin{verbatim}
+F001ABC.zip
+`-- F001ABC/
+    |-- run.py
+    |-- student_agent.py
+    `-- helper.py             (if used)
+\end{verbatim}
+
+If the archive contains a single outer folder, that folder must have the same
+student ID as the ZIP filename, ignoring case. After normalization,
+\texttt{run.py} and \texttt{student\_agent.py} must be at the submission root.
+Every submitted file must be Python source with a \texttt{.py} extension. The
+ZIP file and its extracted Python source must each be no larger than 100 KiB.
+An archive that does not follow these rules may be rejected or removed from the
+submission system. Submit a corrected archive using your own seven-character
+student ID in the filename.
+Do not include the starter repository, scenarios, dependency files,
+\texttt{.venv}, local checkpoints, pretrained weights, or other generated
+files. A malformed or oversized archive is rejected by the website with an
+error message.
+
+Do not submit pretrained weights. The server trains a fresh Red model and a
+fresh Blue model from your code. \texttt{run.py} remains in the archive so the
+submission is directly runnable locally. Official training calls
+\texttt{create\_agent} in \texttt{student\_agent.py}.
+
+Submissions must:
+
+\begin{enumerate}[leftmargin=0.3in]
+  \item import successfully in the fixed course environment;
+  \item follow the required interface;
+  \item return only valid actions;
+  \item use only the permitted libraries;
+  \item keep each role's model at or below 1,000,000 registered parameters;
+  \item complete within the server resource limits.
+\end{enumerate}
+
+The official server training budget and evaluation episode count are controlled
+by the course evaluator and are shown on the upload page. The current budget
+is 10,000 environment steps per role and five evaluation episodes per hidden
+scenario. Deadline checks use the receipt time, not when queued grading finishes.
+Both deadlines are in \texttt{America/New\_York}; the UTC offset is $-05{:}00$
+on November 1 and November 17. The two stage rules
+and deadlines above are the published project grading policy.
+
+\end{document}

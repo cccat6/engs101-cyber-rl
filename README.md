@@ -2,7 +2,7 @@
 
 The official submission site is [arena.codefly.run](https://arena.codefly.run).
 The project has two separately recorded stages: an Intermediate submission due
-October 25, 2026 at 23:59 Eastern Time, and a Final submission due November 17,
+November 1, 2026 at 23:59 Eastern Time, and a Final submission due November 17,
 2026 at 23:59 Eastern Time. Select the correct stage on the upload page and use
 your own seven-character student ID.
 

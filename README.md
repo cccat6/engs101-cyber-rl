@@ -1,5 +1,11 @@
 # ENGS 101 Cyber RL Final Project
 
+The official submission site is [arena.codefly.run](https://arena.codefly.run).
+The project has two separately recorded stages: an Intermediate submission due
+October 25, 2026 at 23:59 Eastern Time, and a Final submission due November 17,
+2026 at 23:59 Eastern Time. Select the correct stage on the upload page and use
+your own seven-character student ID.
+
 This repository contains the student starter and a small local environment.
 
 Students only need to use:
@@ -50,6 +56,11 @@ python run.py --steps 5000 --eval-episodes 10 --device cuda
 
 The server supplies the official training budget, seeds, environment, and
 device.
+
+The Intermediate stage is a milestone. A valid upload must also pass the
+server's interface smoke checks. The Final stage is evaluated against a frozen
+course challenge trained after the Intermediate cohort is frozen. Student
+cross-play rankings are diagnostic and are not the stage grade.
 
 ## Agent interface
 

@@ -100,4 +100,6 @@ The files may be at the ZIP root or inside one folder whose name matches the
 student ID. The ZIP and its extracted Python source must each be at most
 100 KiB. Do not include this repository, scenarios, dependencies, checkpoints,
 pretrained weights, or generated files. The server supplies the environment
-and trains fresh Red and Blue models from the submitted source.
+and trains fresh Red and Blue models from the submitted source. Submissions
+that do not follow this format may be rejected or removed from the submission
+system; upload a corrected archive using your own seven-character student ID.

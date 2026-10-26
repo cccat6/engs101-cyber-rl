@@ -3,8 +3,17 @@
 The official submission site is [arena.codefly.run](https://arena.codefly.run).
 The project has two separately recorded stages: an Intermediate submission due
 November 1, 2026 at 23:59 Eastern Time, and a Final submission due November 17,
-2026 at 23:59 Eastern Time. Select the correct stage on the upload page and use
-your own seven-character student ID.
+2026 at 23:59 Eastern Time. Select the correct stage on the upload page.
+
+**This is a group project.** Each group should designate **one representative**
+to submit on behalf of the group. Use the representative's seven-character
+Dartmouth student ID consistently for all versions and both stages. Other group
+members do not need to submit separately.
+
+**Unlimited resubmissions are allowed before each stage's deadline.** Upload a
+version, view the automatic evaluation results and points, improve your group's
+agent, and submit another version before the deadline. Each upload contains one
+version of your source code; the server trains fresh Red and Blue models.
 
 This repository contains the student starter and a small local environment.
 The full [project handout (PDF)](docs/final_project.pdf) and its
@@ -80,6 +89,13 @@ the code, checks parameters/actions, trains both roles, saves/reloads weights
 and evaluates. Fix any `error` status and resubmit. A working learner can score
 poorly; that is different from a failed run.
 
+The Arena displays automatic performance points while staff verify the existing
+requirement to implement RL in both roles. A final course grade appears after
+that source review. `RL review pending` is not a deduction. Keep the same
+source-only submission; no additional report is required. Random exploration
+and helpers within a learner are allowed, but a fixed/random policy with an
+empty learning function does not fulfill the project requirement.
+
 Intermediate points are **60 / 80 / 100** when zero / one / both roles beat the
 original teacher. A baseline-centered role score must be strictly above 50;
 ties do not count. Final opens after the course freezes the stronger teacher.
@@ -123,15 +139,17 @@ python package_submission.py YOUR_ID
 python package_submission.py YOUR_ID --include helper.py
 ```
 
-Replace `YOUR_ID` with your own seven-character Dartmouth ID (e.g. `f001abc`).
+Replace `YOUR_ID` with your designated representative's seven-character
+Dartmouth ID (e.g. `f001abc`).
 Upload the resulting ZIP to https://arena.codefly.run and select **Intermediate**.
 No GitHub account or private staff code is needed. Do not upload the full clone.
-Use your own ID honestly and keep the upload URL within the class. Each accepted
+The representative must use their own ID honestly; group members do not need
+separate uploads. Keep the upload URL within the class. Each accepted
 version is archived with an Eastern timestamp; the latest upload is the active
 entry. The deadline uses receipt time, not the time the grading queue finishes.
 Both deadlines are 11:59 PM America/New_York (EST/UTC-5 on November 1 and 17).
 
-Upload one ZIP named with your seven-character student ID, for example
+Upload one ZIP per version named with your representative's student ID, for example
 `f001abc.zip`. The ZIP may contain only:
 
 - `run.py`;
@@ -144,4 +162,4 @@ student ID. The ZIP and its extracted Python source must each be at most
 pretrained weights, or generated files. The server supplies the environment
 and trains fresh Red and Blue models from the submitted source. Submissions
 that do not follow this format may be rejected or removed from the submission
-system; upload a corrected archive using your own seven-character student ID.
+system; upload a corrected archive using the same representative's student ID.

@@ -48,9 +48,13 @@
 \vspace{0.5em}
 
 \begin{enumerate}[leftmargin=0.25in,label=$\diamond$,itemsep=0.15em]
-  \item Submit one ZIP archive through the course website at
+  \item \textbf{This is a group project.} Each group should designate one
+        representative to submit on behalf of the group. Other group members
+        do not need to submit separately.
+  \item The representative uploads a ZIP at
         \href{\arenaurl}{\texttt{arena.codefly.run}}. Name the archive with
-        your seven-character student ID.
+        the representative's seven-character Dartmouth student ID. Use the same
+        representative ID for all versions and both stages.
   \item Submit one agent implementation. The same code must support both the
         Red and Blue roles.
   \item You may use the Python standard library, PyTorch, and NumPy. You may
@@ -60,6 +64,10 @@
         format and interface.
   \item The course server performs the official training and evaluation.
         Local results are for development only.
+  \item \textbf{Unlimited resubmissions are allowed before each stage's
+        deadline.} Your representative may upload a version, view its automatic
+        evaluation results and points, improve the group's agent, and submit
+        another version before the deadline.
 \end{enumerate}
 
 \section*{1. Assessment Schedule and Grading}
@@ -71,8 +79,15 @@ at 23:59 Eastern Time. These dates are based on the Registrar's Fall Term 2026
 calendar: \href{https://registrar.dartmouth.edu/calendars/academic-institutional-calendars/2026-2027-key-dates/fall-term-2026}{Dartmouth Fall Term 2026 calendar}.
 
 The server preserves each upload as a separate timestamped source snapshot.
-Please select the correct stage on the upload page, use your own student ID,
-and do not share the submission website.
+Please select the correct stage on the upload page, use your group's designated
+representative's student ID, and do not share the submission website outside the
+class. There is no limit on the number of submissions before the relevant
+deadline. Each upload contains one current version of the group's source code;
+the server trains fresh Red and Blue models for that version. Check the displayed
+results, make improvements and resubmit as needed. Automatic performance points
+are feedback; staff confirm course grades after reviewing the required RL
+implementation. Pending review is not a deduction, and no additional report is
+required for that review.
 
 Each stage is scored out of 100 points. An upload receipt confirms only the
 archive format. Both role-training runs, model reload and evaluation must
@@ -282,7 +297,8 @@ python package_submission.py YOUR_ID
 # If your agent imports a helper module:
 python package_submission.py YOUR_ID --include helper.py
 \end{verbatim}
-Replace \texttt{YOUR\_ID} with your own seven-character Dartmouth ID.
+Replace \texttt{YOUR\_ID} with your group's designated representative's
+seven-character Dartmouth ID.
 
 The provided \texttt{SimpleAgent} is a minimal one-layer policy-gradient
 example. It runs end to end and updates its PyTorch model, but it is deliberately
@@ -360,8 +376,10 @@ stable score. Hidden scenarios and trajectories are not released.
 
 \section*{11. Submission}
 
-Upload one ZIP archive through the course website. Its filename must be your
-seven-character student ID followed by \texttt{.zip}. The ID may contain ASCII
+Only one designated representative needs to upload on behalf of each group.
+Upload one source-code ZIP per version through the course website. Its filename
+must be the representative's seven-character student ID followed by \texttt{.zip}.
+Use that same ID for all resubmissions and both stages. The ID may contain ASCII
 letters and digits, in either case; the server converts it to lowercase. For
 example:
 
@@ -395,8 +413,8 @@ student ID as the ZIP filename, ignoring case. After normalization,
 Every submitted file must be Python source with a \texttt{.py} extension. The
 ZIP file and its extracted Python source must each be no larger than 100 KiB.
 An archive that does not follow these rules may be rejected or removed from the
-submission system. Submit a corrected archive using your own seven-character
-student ID in the filename.
+submission system. Submit a corrected archive using your designated
+representative's seven-character student ID in the filename.
 Do not include the starter repository, scenarios, dependency files,
 \texttt{.venv}, local checkpoints, pretrained weights, or other generated
 files. A malformed or oversized archive is rejected by the website with an

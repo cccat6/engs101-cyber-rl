@@ -141,13 +141,14 @@ python package_submission.py YOUR_ID --include helper.py
 
 Replace `YOUR_ID` with your designated representative's seven-character
 Dartmouth ID (e.g. `f001abc`).
-Upload the resulting ZIP to https://arena.codefly.run and select **Intermediate**.
+Upload the resulting ZIP to https://arena.codefly.run and select **Final**.
+Intermediate submissions are closed; Final submissions are open through November 22.
 No GitHub account or private staff code is needed. Do not upload the full clone.
 The representative must use their own ID honestly; group members do not need
 separate uploads. Keep the upload URL within the class. Each accepted
 version is archived with an Eastern timestamp; the latest upload is the active
 entry. The deadline uses receipt time, not the time the grading queue finishes.
-Both deadlines are 11:59 PM America/New_York (EST/UTC-5 on November 1 and 17).
+Both deadlines are 11:59 PM America/New_York (EST/UTC-5 on November 1 and 22).
 
 Upload one ZIP per version named with your representative's student ID, for example
 `f001abc.zip`. The ZIP may contain only:
